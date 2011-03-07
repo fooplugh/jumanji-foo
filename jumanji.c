@@ -2326,6 +2326,8 @@ isc_completion(Argument* argument)
   if((identifier != ':') && (argument->n != HIDE))
   {
     g_free(input);
+    if(current_command != input_m)
+      g_free(current_command);
     return;
   }
 

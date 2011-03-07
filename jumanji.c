@@ -1254,16 +1254,18 @@ open_uri(WebKitWebView* web_view, char* uri)
       {
         if(!strcmp(se->name, uri))
         {
-          new_uri = g_strdup(se->uri);
-          new_uri = g_strjoinv(NULL, g_strsplit(new_uri, "%s", -1)); /* remove %s */ 
+          gchar **trunc_uri = g_strsplit(se->uri, "%s", -1);
+          new_uri = g_strjoinv(NULL, trunc_uri);
+          g_strfreev(trunc_uri);
           break;
         }
         se = se->next;
       }
       if(!new_uri) 
       {
-        new_uri = g_strdup(Jumanji.Global.search_engines->uri);
-        new_uri = g_strjoinv(uri, g_strsplit(new_uri, "%s", -1)); /* replace %s with uri */ 
+        gchar **trunc_uri = g_strsplit(Jumanji.Global.search_engines->uri, "%s", -1);
+        new_uri = g_strjoinv(uri, trunc_uri);
+        g_strfreev(trunc_uri);
       }
     }
     else

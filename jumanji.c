@@ -3,22 +3,20 @@
 #define _BSD_SOURCE
 #define _XOPEN_SOURCE 500
 
-#include <regex.h>
 #include <ctype.h>
-#include <limits.h>
+#include <math.h>
+#include <regex.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <libgen.h>
-#include <math.h>
+
 #include <libsoup/soup.h>
 #include <unique/unique.h>
 
-#include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
 
-#include <webkit/webkit.h>
 #include <JavaScriptCore/JavaScript.h>
+#include <webkit/webkit.h>
 
 /* macros */
 #define LENGTH(x) sizeof(x)/sizeof((x)[0])

@@ -655,7 +655,7 @@ create_tab(char* uri, gboolean background)
   GtkWidget *tab_label = gtk_label_new(NULL);
   gtk_label_set_width_chars(GTK_LABEL(tab_label), 1.0);
   gtk_misc_set_alignment(    GTK_MISC(tab_label), 0.0, 0.0);
-  gtk_misc_set_padding(      GTK_MISC(tab_label), 4.0, 4.0);
+  gtk_misc_set_padding(      GTK_MISC(tab_label), 4.0, 2.0);
 
   /* create tab container */
   GtkWidget *tev_box = gtk_event_box_new();
@@ -1002,10 +1002,10 @@ void init_ui()
   gtk_misc_set_alignment(GTK_MISC(Jumanji.Statusbar.tabs),     1.0, 0.0);
   gtk_misc_set_alignment(GTK_MISC(Jumanji.Statusbar.position), 1.0, 0.0);
 
-  gtk_misc_set_padding(GTK_MISC(Jumanji.Statusbar.text),     2.0, 4.0);
-  gtk_misc_set_padding(GTK_MISC(Jumanji.Statusbar.buffer),   2.0, 4.0);
-  gtk_misc_set_padding(GTK_MISC(Jumanji.Statusbar.tabs),     2.0, 4.0);
-  gtk_misc_set_padding(GTK_MISC(Jumanji.Statusbar.position), 2.0, 4.0);
+  gtk_misc_set_padding(GTK_MISC(Jumanji.Statusbar.text),     2.0, 2.0);
+  gtk_misc_set_padding(GTK_MISC(Jumanji.Statusbar.buffer),   2.0, 2.0);
+  gtk_misc_set_padding(GTK_MISC(Jumanji.Statusbar.tabs),     2.0, 2.0);
+  gtk_misc_set_padding(GTK_MISC(Jumanji.Statusbar.position), 2.0, 2.0);
 
   gtk_box_pack_start(Jumanji.UI.statusbar_entries, GTK_WIDGET(Jumanji.Statusbar.text),     TRUE,   TRUE, 2);
   gtk_box_pack_start(Jumanji.UI.statusbar_entries, GTK_WIDGET(Jumanji.Statusbar.buffer),   FALSE, FALSE, 2);
@@ -1623,8 +1623,8 @@ create_completion_row(GtkBox* results, char* command, char* description, gboolea
   /*}*/
   /*else*/
   /*{*/
-    gtk_misc_set_padding(GTK_MISC(show_command),     1.0, 1.0);
-    gtk_misc_set_padding(GTK_MISC(show_description), 1.0, 1.0);
+    gtk_misc_set_padding(GTK_MISC(show_command),     2.0, 1.0);
+    gtk_misc_set_padding(GTK_MISC(show_description), 2.0, 1.0);
   /*}*/
 
   gtk_label_set_use_markup(show_command,     TRUE);

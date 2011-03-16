@@ -1759,7 +1759,7 @@ sc_abort(Argument* UNUSED(argument))
   run_script(cmd, NULL, NULL);
 
   /* Stop loading website */
-  if(webkit_web_view_get_progress(GET_CURRENT_TAB()) == 1.0)
+  if(webkit_web_view_get_progress(GET_CURRENT_TAB()) != 0.0 && Jumanji.Global.mode != FOLLOW)
     cmd_stop(0, NULL);
 
   /* Set back to normal mode */

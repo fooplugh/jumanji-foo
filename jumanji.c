@@ -3721,13 +3721,17 @@ bcmd_nav_tabs(char* buffer, Argument* argument)
 
     char* number = g_strndup(buffer, digit_end);
     new_tab      = atoi(number) - 1;
+    if(new_tab < 0)
+      new_tab = number_of_tabs - 1;
     g_free(number);
   }
 
-  gtk_notebook_set_current_page(Jumanji.UI.view, new_tab);
-  gtk_widget_grab_focus(GTK_WIDGET(GET_CURRENT_TAB_WIDGET()));
-
-  update_status();
+  if(new_tab != current_tab)
+  {
+    gtk_notebook_set_current_page(Jumanji.UI.view, new_tab);
+    gtk_widget_grab_focus(GTK_WIDGET(GET_CURRENT_TAB_WIDGET()));
+    update_status();
+  }
 }
 
 void

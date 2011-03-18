@@ -328,6 +328,7 @@ struct
     GList   *bookmarks;
     GList   *sessions;
     GList   *history;
+    GList   *last_closed;
     GList   *allowed_plugins;
     GList   *allowed_plugin_uris;
     SearchEngineList  *search_engines;
@@ -415,6 +416,7 @@ void sc_toggle_proxy(Argument*);
 void sc_toggle_statusbar(Argument*);
 void sc_toggle_sourcecode(Argument*);
 void sc_toggle_tabbar(Argument*);
+void sc_reopen(Argument*);
 void sc_quit(Argument*);
 void sc_yank(Argument*);
 void sc_zoom(Argument*);
@@ -1089,6 +1091,7 @@ init_jumanji()
   Jumanji.Global.markers             = NULL;
   Jumanji.Global.bookmarks           = NULL;
   Jumanji.Global.history             = NULL;
+  Jumanji.Global.last_closed         = NULL;
   Jumanji.Global.allowed_plugins     = NULL;
   Jumanji.Global.allowed_plugin_uris = NULL;
   Jumanji.Global.init_ui             = FALSE;
@@ -1831,6 +1834,10 @@ sc_close_tab(Argument* UNUSED(argument))
     list = next_marker;
   }
 
+  gchar *uri = g_strdup(webkit_web_view_get_uri(GET_CURRENT_TAB()));
+  if(uri && !(!strcmp(uri, home_page) && gtk_notebook_get_n_pages(Jumanji.UI.view) == 1)) 
+    Jumanji.Global.last_closed = g_list_prepend(Jumanji.Global.last_closed, uri);
+
   if(gtk_notebook_get_n_pages(Jumanji.UI.view) > 1)
   {
     gtk_container_remove(GTK_CONTAINER(Jumanji.UI.tabbar), GTK_WIDGET(g_object_get_data(G_OBJECT(tab), "tab")));
@@ -2216,6 +2223,17 @@ sc_toggle_tabbar(Argument* UNUSED(argument))
     gtk_widget_hide(GTK_WIDGET(Jumanji.UI.tabbar));
   else
     gtk_widget_show(GTK_WIDGET(Jumanji.UI.tabbar));
+}
+
+void
+sc_reopen(Argument* UNUSED(argument))
+{
+  GList *last_closed = g_list_first(Jumanji.Global.last_closed);
+  if(last_closed)
+  {
+    create_tab(last_closed->data, FALSE);
+    Jumanji.Global.last_closed = g_list_remove(Jumanji.Global.last_closed, last_closed->data);
+  }
 }
 
 void
@@ -3859,6 +3877,7 @@ cb_destroy(GtkWidget* UNUSED(widget), gpointer UNUSED(data))
     free(list->data);
 
   g_list_free(Jumanji.Global.history);
+  g_list_free(Jumanji.Global.last_closed);
 
   /* clean shortcut list */
   ShortcutList* sc = Jumanji.Bindings.sclist;

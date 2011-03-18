@@ -128,6 +128,7 @@ Shortcut shortcuts[] = {
   {GDK_CONTROL_MASK,   GDK_m,             sc_toggle_statusbar,  NORMAL,       { 0,                  NULL } },
   {GDK_CONTROL_MASK,   GDK_n,             sc_toggle_tabbar,     NORMAL,       { 0,                  NULL } },
   {GDK_CONTROL_MASK,   GDK_s,             sc_toggle_sourcecode, NORMAL,       { 0,                  NULL } },
+  {0,                  GDK_u,             sc_reopen,            NORMAL,       { 0,                  NULL } },
   {GDK_CONTROL_MASK,   GDK_q,             sc_quit,              ALL,          { 0,                  NULL } },
   {0,                  GDK_y,             sc_yank,              NORMAL,       { 0,                  NULL } },
   {0,                  GDK_Y,             sc_yank,              NORMAL,       { XA_CLIPBOARD,       NULL } },

@@ -162,6 +162,7 @@ InputbarShortcut inputbar_shortcuts[] = {
   {0,                  GDK_BackSpace,     isc_string_manipulation,   { DELETE_LAST_CHAR,  NULL } },
   {GDK_CONTROL_MASK,   GDK_h,             isc_string_manipulation,   { DELETE_LAST_CHAR,  NULL } },
   {GDK_CONTROL_MASK,   GDK_w,             isc_string_manipulation,   { DELETE_LAST_WORD,  NULL } },
+  {GDK_CONTROL_MASK,   GDK_x,             isc_string_manipulation,   { DELETE_TO_CMD,     NULL } },
   {GDK_CONTROL_MASK,   GDK_f,             isc_string_manipulation,   { NEXT_CHAR,         NULL } },
   {GDK_CONTROL_MASK,   GDK_b,             isc_string_manipulation,   { PREVIOUS_CHAR,     NULL } },
 };

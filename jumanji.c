@@ -45,6 +45,7 @@ enum {
   DEFAULT,
   DELETE_LAST_CHAR,
   DELETE_LAST_WORD,
+  DELETE_TO_CMD,
   DOWN,
   ERROR,
   FORWARD,
@@ -2645,6 +2646,25 @@ isc_string_manipulation(Argument* argument)
       isc_abort(NULL);
 
     gtk_editable_delete_text(GTK_EDITABLE(Jumanji.UI.inputbar), pos - 1, pos);
+  }
+  else if(argument->n == DELETE_TO_CMD)
+  {
+    char *p;
+    int  i;
+
+    p = strchr(input, ' ');
+    if(p)
+      i = p - input;
+    else
+      i = -1;
+
+    if(i == pos - 1)
+      i = -1;
+
+    if(i == -1 && pos == length)
+      isc_abort(NULL);
+    else
+      gtk_editable_delete_text(GTK_EDITABLE(Jumanji.UI.inputbar), i + 1, pos);
   }
   else if(argument->n == NEXT_CHAR)
     gtk_editable_set_position(GTK_EDITABLE(Jumanji.UI.inputbar), pos+1);

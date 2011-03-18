@@ -1056,6 +1056,8 @@ void notify(int level, char* message)
     return;
   }
 
+  if(show_statusbar)
+    gtk_widget_hide(GTK_WIDGET(Jumanji.UI.statusbar));
   if(!(GTK_WIDGET_VISIBLE(GTK_WIDGET(Jumanji.UI.inputbar))))
     gtk_widget_show(GTK_WIDGET(Jumanji.UI.inputbar));
 
@@ -1764,6 +1766,8 @@ sc_abort(Argument* UNUSED(argument))
 
   /* Hide inputbar */
   gtk_widget_hide(GTK_WIDGET(Jumanji.UI.inputbar));
+  if(show_statusbar)
+    gtk_widget_show(GTK_WIDGET(Jumanji.UI.statusbar));
 
   /* Unmark search results */
   webkit_web_view_unmark_text_matches(GET_CURRENT_TAB());
@@ -1879,6 +1883,8 @@ sc_focus_inputbar(Argument* argument)
     }
   }
 
+  if(show_statusbar)
+    gtk_widget_hide(GTK_WIDGET(Jumanji.UI.statusbar));
   if(!(GTK_WIDGET_VISIBLE(GTK_WIDGET(Jumanji.UI.inputbar))))
     gtk_widget_show(GTK_WIDGET(Jumanji.UI.inputbar));
 }
@@ -2280,6 +2286,8 @@ isc_abort(Argument* UNUSED(argument))
   notify(DEFAULT, "");
   gtk_widget_grab_focus(GTK_WIDGET(GET_CURRENT_TAB_WIDGET()));
   gtk_widget_hide(GTK_WIDGET(Jumanji.UI.inputbar));
+  if(show_statusbar)
+    gtk_widget_show(GTK_WIDGET(Jumanji.UI.statusbar));
 }
 
 void

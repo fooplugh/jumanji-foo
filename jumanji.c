@@ -2114,9 +2114,11 @@ sessionswitch(char* session_name)
     gtk_notebook_remove_page(Jumanji.UI.view, i);
   }
 
-  // load the session
+  gboolean foo = next_to_current;
+  next_to_current = FALSE;
   for(int i = 0; i < nb_uris; i++)
     create_tab(se_uris[i], TRUE);
+  next_to_current = foo;
 
   g_strfreev(se_uris);
   return TRUE;
@@ -2138,8 +2140,11 @@ sessionload(char* session_name)
       if(n <= 0)
         return FALSE;
 
+      gboolean foo = next_to_current;
+      next_to_current = FALSE;
       for(int i = 0; i < n; i++)
         create_tab(uris[i], TRUE);
+      next_to_current = foo;
 
       g_strfreev(uris);
       return TRUE;

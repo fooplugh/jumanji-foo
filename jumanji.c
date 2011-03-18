@@ -1969,7 +1969,7 @@ sc_paste(Argument* argument)
 void
 sc_reload(Argument* argument)
 {
-  if(argument->n == BYPASS_CACHE)
+  if(argument && argument->n == BYPASS_CACHE)
     webkit_web_view_reload_bypass_cache(GET_CURRENT_TAB());
   else
     webkit_web_view_reload(GET_CURRENT_TAB());
@@ -3022,7 +3022,10 @@ cmd_plugintype(int argc, char** argv)
   Jumanji.Global.allowed_plugins = g_list_append(Jumanji.Global.allowed_plugins, strdup(argv[0]));
 
   if(gtk_notebook_get_current_page(Jumanji.UI.view) >= 0)
-    sc_reload(NULL);
+  {
+    Argument argument = {0, NULL}; 
+    sc_reload(&argument);
+  }
 
   return TRUE;
 }

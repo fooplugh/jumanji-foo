@@ -1146,8 +1146,7 @@ open_uri(WebKitWebView* web_view, char* uri)
   if(!uri)
     return;
 
-  while (*uri == ' ')
-    uri++;
+  uri = g_strstrip(uri);
 
   gchar* new_uri = NULL;
 
@@ -1247,23 +1246,24 @@ open_uri(WebKitWebView* web_view, char* uri)
      */
     else if(!strpbrk(uri, ".:/") && strncmp(uri, "localhost", 9))
     {
-      if(Jumanji.Global.search_engines)
-      {
-        new_uri = g_strdup_printf(Jumanji.Global.search_engines->uri, uri);
-
-        /* -2 for the '%s' */
-        gchar* searchitem = new_uri + strlen(Jumanji.Global.search_engines->uri) - 2;
-
-        while(*searchitem)
-        {
-          if(*searchitem == ' ')
-            *searchitem = '+';
-
-          searchitem += 1;
-        }
-      }
-      else
+      struct SEList *se = Jumanji.Global.search_engines;
+      if(!se)
         new_uri = g_strconcat("http://", uri, NULL);
+      while(se)
+      {
+        if(!strcmp(se->name, uri))
+        {
+          new_uri = g_strdup(se->uri);
+          new_uri = g_strjoinv(NULL, g_strsplit(new_uri, "%s", -1)); /* remove %s */ 
+          break;
+        }
+        se = se->next;
+      }
+      if(!new_uri) 
+      {
+        new_uri = g_strdup(Jumanji.Global.search_engines->uri);
+        new_uri = g_strjoinv(uri, g_strsplit(new_uri, "%s", -1)); /* replace %s with uri */ 
+      }
     }
     else
       new_uri = strstr(uri, "://") ? g_strdup(uri) : g_strconcat("http://", uri, NULL);

@@ -189,6 +189,7 @@ Command commands[] = {
   {"reload",    0,              cmd_reload,          0,            "Reload the current web page" },
   {"reloadall", 0,              cmd_reload_all,      0,            "Reload all tab pages" },
   {"saveas",    0,              cmd_saveas,          0,            "Save current document to disk" },
+  {"scheme",    0,              cmd_schemehandler,   0,            "Set URI scheme handler" },
   {"script",    0,              cmd_script,          0,            "Load a javascript file" },
   {"sessionload","sl",          cmd_sessionload,     cc_session,   "Load session with specified name" },
   {"sessionsave","ssa",         cmd_sessionsave,     cc_session,   "Save session with specified name" },

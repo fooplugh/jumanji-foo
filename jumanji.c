@@ -252,6 +252,16 @@ struct SScript
 
 typedef struct SScript ScriptList;
 
+struct HList
+{
+  char         *scheme;
+  char         *command;
+  gboolean     inc_scheme;
+  struct HList *next;
+};
+
+typedef struct HList HandlerList;
+
 typedef struct
 {
   int id;
@@ -330,6 +340,7 @@ struct
     GList   *last_closed;
     GList   *allowed_plugins;
     GList   *allowed_plugin_uris;
+    HandlerList       *handlers;
     SearchEngineList  *search_engines;
     ScriptList        *scripts;
     WebKitWebSettings *browser_settings;
@@ -383,6 +394,7 @@ gboolean search_and_highlight(Argument*);
 gboolean sessionload(char*);
 gboolean sessionsave(char*);
 gboolean sessionswitch(char*);
+gboolean scheme_handler(char*);
 void set_completion_row_color(GtkBox*, int, int);
 void switch_view(GtkWidget*);
 void update_status();
@@ -448,6 +460,7 @@ gboolean cmd_sessionswitch(int, char**);
 gboolean cmd_set(int, char**);
 gboolean cmd_stop(int, char**);
 gboolean cmd_tabopen(int, char**);
+gboolean cmd_schemehandler(int, char**);
 gboolean cmd_winopen(int, char**);
 gboolean cmd_write(int, char**);
 
@@ -1089,6 +1102,7 @@ init_jumanji()
   Jumanji.Global.mode                = NORMAL;
   Jumanji.Global.search_engines      = NULL;
   Jumanji.Global.command_history     = NULL;
+  Jumanji.Global.handlers            = NULL;
   Jumanji.Global.scripts             = NULL;
   Jumanji.Global.markers             = NULL;
   Jumanji.Global.bookmarks           = NULL;
@@ -1140,6 +1154,30 @@ out_of_memory()
 {
   printf("error: out of memory\n");
   exit(-1);
+}
+
+gboolean
+scheme_handler(char* uri)
+{
+  if(!uri)
+    return TRUE;
+
+  HandlerList *hl = Jumanji.Global.handlers;
+  while(hl)
+  {
+    char *p = strstr(uri, hl->scheme);
+    if(p == uri)
+    {
+      if(!hl->inc_scheme)
+        uri = uri + strlen(hl->scheme);
+      char *command = g_strdup_printf(hl->command, uri);
+      g_spawn_command_line_async(command, NULL);
+      g_free(command);
+      return TRUE;
+    }
+    hl = hl->next;
+  }
+  return FALSE;
 }
 
 void
@@ -1469,6 +1507,8 @@ read_configuration()
           cmd_script(length - 1, tokens + 1);
         else if(!strcmp(tokens[0], "plugin"))
           cmd_plugintype(length - 1, tokens + 1);
+        else if(!strcmp(tokens[0], "scheme"))
+          cmd_schemehandler(length - 1, tokens + 1);
       }
     }
   }
@@ -1927,15 +1967,15 @@ sc_follow_link(Argument* argument)
   run_script(cmd, &value, NULL);
   g_free(cmd);
 
-  if(value && strcmp(value, "undefined"))
+  if(value && strcmp(value, "undefined") && !scheme_handler(value))
   {
     if(open_mode == -1)
       open_uri(GET_CURRENT_TAB(), value);
     else
       create_tab(value, TRUE);
-
-    sc_abort(NULL);
   }
+
+  sc_abort(NULL);
 }
 
 void
@@ -1958,10 +1998,13 @@ sc_paste(Argument* argument)
 {
   gchar* text = gtk_clipboard_wait_for_text(gtk_clipboard_get(GDK_SELECTION_PRIMARY));
 
-  if(argument->n == NEW_TAB)
-    create_tab(text, FALSE);
-  else
-    open_uri(GET_CURRENT_TAB(), text);
+  if(!scheme_handler(text))
+  {
+    if(argument->n == NEW_TAB)
+      create_tab(text, FALSE);
+    else
+      open_uri(GET_CURRENT_TAB(), text);
+  }
 
   g_free(text);
 }
@@ -3007,7 +3050,9 @@ cmd_open(int argc, char** argv)
 
   char* uri = g_strjoinv(" ", argv);
 
-  open_uri(GET_CURRENT_TAB(), uri);
+  if(!scheme_handler(uri))
+    open_uri(GET_CURRENT_TAB(), uri);
+
   g_free(uri);
 
   return TRUE;
@@ -3375,9 +3420,124 @@ cmd_tabopen(int argc, char** argv)
     uri = g_string_append(uri, argv[i]);
   }
 
-  create_tab(uri->str, FALSE);
+  if(!scheme_handler(uri->str))
+    create_tab(uri->str, FALSE);
 
   g_string_free(uri, FALSE);
+
+  return TRUE;
+}
+
+gboolean
+cmd_schemehandler(int argc, char** argv)
+{
+  if(argc < 1)
+    return FALSE;
+
+  gboolean inc_scheme;
+
+  char *scheme  = NULL;
+  char *command = NULL;
+  char *a       = NULL;
+  char *b       = NULL;
+
+  int i;
+  GString *line = g_string_new("");
+  for(i = 0; i < argc; ++i)
+  {
+    line = g_string_append_c(line, ' ');
+    line = g_string_append(line, argv[i]);
+  }
+  g_strstrip(line->str);
+  if(strlen(line->str) < 2)
+  {
+    g_string_free(line, TRUE);
+    return FALSE;
+  }
+
+  a = line->str;
+  if(a[0] == '!')
+  {
+    inc_scheme = 1;
+    ++a;
+  }
+  else
+  {
+    inc_scheme = 0;
+  }
+
+  while(a[0] && isblank(a[0]))
+    ++a;
+  if(!a[0] || a[0] == ':')
+  {
+    g_string_free(line, TRUE);
+    return FALSE;
+  }
+  for(b = a + 1; b[0] && !isblank(b[0]); ++b);
+  if((b - 1)[0] != ':')
+  {
+    g_string_free(line, TRUE);
+    return FALSE;
+  }
+  scheme = g_strndup(a, b - a);
+  while(b[0] && isblank(b[0]))
+    ++b;
+  command = g_strdup(b);
+  g_string_free(line, TRUE);
+
+  /* already in the list? */
+  HandlerList *hl = Jumanji.Global.handlers;
+  HandlerList *pr = NULL;
+  while(hl)
+  {
+    if(!strcmp(hl->scheme, scheme))
+    {
+      g_free(hl->command);
+      if(strlen(command))
+      {
+        /* change command */
+        hl->command    = command;
+        hl->inc_scheme = inc_scheme;
+      }
+      else
+      {
+        /* empty command -> remove from the list */ 
+        g_free(hl->scheme);
+        /* first item in the list? */
+        if(!pr)
+          Jumanji.Global.handlers = hl->next;
+        else
+          pr->next = hl->next;
+        g_free(hl);
+      }
+      g_free(scheme);
+      return TRUE;
+    }
+    pr = hl;
+    hl = hl->next;
+  }
+
+  if(!strlen(command))
+  {
+    g_free(scheme);
+    g_free(command);
+    return FALSE;
+  }
+
+  /* append new entry to the list */
+  HandlerList *entry = malloc(sizeof(HandlerList));
+  if(!entry)
+    out_of_memory();
+
+  entry->scheme     = scheme;
+  entry->command    = command;
+  entry->inc_scheme = inc_scheme;
+  entry->next       = NULL;
+
+  if(!Jumanji.Global.handlers)
+    Jumanji.Global.handlers = entry;
+  else
+    pr->next = entry;
 
   return TRUE;
 }
@@ -3398,10 +3558,13 @@ cmd_winopen(int argc, char** argv)
   }
 
   g_strstrip(uri->str);
-  if(strlen(uri->str))
-    new_window(uri->str);
-  else
-    new_window(home_page);
+  if(!scheme_handler(uri->str))
+  {
+    if(strlen(uri->str))
+      new_window(uri->str);
+    else
+      new_window(home_page);
+  }
 
   g_string_free(uri, FALSE);
 
@@ -3980,6 +4143,19 @@ cb_destroy(GtkWidget* UNUSED(widget), gpointer UNUSED(data))
       free(sl->content);
     free(sl);
     sl = ne;
+  }
+
+  /* clean handlers */
+  HandlerList *hl = Jumanji.Global.handlers;
+  HandlerList *ne = NULL;
+
+  while(hl)
+  {
+    ne = hl->next;
+    free(hl->scheme);
+    free(hl->command);
+    free(hl);
+    hl = ne;
   }
 
   /* clean markers */

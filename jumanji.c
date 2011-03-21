@@ -1113,7 +1113,7 @@ init_jumanji()
 void
 new_window(char* uri)
 {
-  if(!uri)
+  if(!uri || !strlen(uri))
     return;
 
   char* nargv[6];
@@ -3390,13 +3390,15 @@ cmd_winopen(int argc, char** argv)
 
   for(i = 0; i < argc; i++)
   {
-    if(i != 0)
-      uri = g_string_append_c(uri, ' ');
-
     uri = g_string_append(uri, argv[i]);
+    uri = g_string_append_c(uri, ' ');
   }
 
-  new_window(uri->str);
+  g_strstrip(uri->str);
+  if(strlen(uri->str))
+    new_window(uri->str);
+  else
+    new_window(home_page);
 
   g_string_free(uri, FALSE);
 

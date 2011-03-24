@@ -463,6 +463,7 @@ void bcmd_go_home(char*, Argument*);
 void bcmd_go_parent(char*, Argument*);
 void bcmd_nav_history(char*, Argument*);
 void bcmd_nav_tabs(char*, Argument*);
+void bcmd_move_tab(char*, Argument*);
 void bcmd_paste(char*, Argument*);
 void bcmd_quit(char*, Argument*);
 void bcmd_scroll(char*, Argument*);
@@ -3669,6 +3670,32 @@ void
 bcmd_nav_history(char* UNUSED(buffer), Argument* argument)
 {
   sc_nav_history(argument);
+}
+
+void
+bcmd_move_tab(char* buffer, Argument* argument)
+{
+  int current = gtk_notebook_get_current_page(Jumanji.UI.view);
+  int total   = gtk_notebook_get_n_pages(Jumanji.UI.view);
+
+  int new;
+  if(argument->n == SPECIFIC)
+    new = atoi(buffer) - 1; 
+  else
+    new = current + (argument->n == NEXT ? +1 : -1);
+
+  if(new < 0 || new == current)
+    return;
+  if(new > total)
+    new = total;
+
+  GtkWidget *tab = GTK_WIDGET(GET_CURRENT_TAB_WIDGET());
+  GtkWidget *tabbar_entry = GTK_WIDGET(g_object_get_data(G_OBJECT(tab), "tab"));
+
+  gtk_notebook_reorder_child(Jumanji.UI.view, tab, new);
+  gtk_box_reorder_child(GTK_BOX(Jumanji.UI.tabbar), tabbar_entry, new);
+
+  update_status();
 }
 
 void

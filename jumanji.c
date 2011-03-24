@@ -1981,10 +1981,7 @@ sc_follow_link(Argument* argument)
 void
 sc_nav_history(Argument* argument)
 {
-  if(argument->n == NEXT)
-    webkit_web_view_go_forward(GET_CURRENT_TAB());
-  else if(argument->n == PREVIOUS)
-    webkit_web_view_go_back(GET_CURRENT_TAB());
+  bcmd_nav_history(NULL, argument);
 }
 
 void
@@ -3865,9 +3862,25 @@ bcmd_go_parent(char* buffer, Argument* UNUSED(argument))
 }
 
 void
-bcmd_nav_history(char* UNUSED(buffer), Argument* argument)
+bcmd_nav_history(char* buffer, Argument* argument)
 {
-  sc_nav_history(argument);
+  if(!argument)
+    return;
+
+  int step = (argument->n == NEXT ? +1 : -1);
+  if(buffer && strlen(buffer))
+  {
+    int n;
+    for(n = 0; isdigit(buffer[n]); ++n);
+    if(n)
+    {
+      char *num = g_strndup(buffer, n);
+      step      = step * atoi(num);
+      g_free(num);
+    }
+  }
+  if(step)
+    webkit_web_view_go_back_or_forward(GET_CURRENT_TAB(), step);
 }
 
 void
